@@ -49,7 +49,9 @@ env/
 *.gz
 *.rar
 *.json
-*.jsonl
 
 # Git
 *.orig
+
+# Jupyter Notebook
+.ipynb_checkpoints
