@@ -1,7 +1,5 @@
 import os
 import sys
-import asyncio
-
 import pytest
 
 # ensure src is importable as package
@@ -48,7 +46,14 @@ async def test_stream_endpoint(monkeypatch):
     monkeypatch.setattr(routes, "_flush_batch", fake_flush)
 
     # Import app after monkeypatching to avoid startup DB work
-    from src.main import app
+    import src.main as main
+
+    async def fake_startup():
+        return None
+
+    monkeypatch.setattr(main, "create_extensions_and_tables", fake_startup)
+
+    app = main.app
     from httpx import AsyncClient
 
     ndjson = '{"prompt":"hello"}\n{"prompt":"bye"}\n'

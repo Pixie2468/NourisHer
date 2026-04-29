@@ -1,14 +1,15 @@
 import json
 import logging
-from typing import List
+from typing import AsyncGenerator, List
 
-from fastapi import APIRouter, Request, Depends, HTTPException
-from starlette.concurrency import run_in_threadpool
+from fastapi import APIRouter, Request, HTTPException
+from fastapi.responses import StreamingResponse
+from starlette.concurrency import iterate_in_threadpool, run_in_threadpool
 
-from ..config import settings
-from ..db import AsyncSession
-from ..ml_model import generate
-from ..models import Record
+from api.config import settings
+from api.db import AsyncSession
+from api.ml_model import generate, stream_generate
+from ml.models.models import Record
 from sqlalchemy import insert
 
 router = APIRouter()
@@ -51,15 +52,20 @@ async def stream(request: Request):
                         continue
                     # run generation in threadpool to avoid blocking
                     try:
-                        out = await run_in_threadpool(generate, payload.get("prompt") or json.dumps(payload))
+                        out = await run_in_threadpool(
+                            generate, payload.get("prompt") or json.dumps(payload)
+                        )
                     except Exception:
                         logger.exception("model generation failed")
                         out = {"error": "generation_failed"}
 
-                    batch.append({
-                        "input": payload,
-                        "output": out,
-                    })
+                    batch.append(
+                        {
+                            "input": payload,
+                            "output": out,
+                            "meta": None,
+                        }
+                    )
 
                     if len(batch) >= settings.BATCH_SIZE:
                         await _flush_batch(session, batch)
@@ -73,4 +79,28 @@ async def stream(request: Request):
 
         return {"status": "ok"}
     else:
-        raise HTTPException(status_code=415, detail="Unsupported content-type. Use application/x-ndjson")
+        raise HTTPException(
+            status_code=415, detail="Unsupported content-type. Use application/x-ndjson"
+        )
+
+
+@router.post("/stream/sse")
+async def stream_sse(request: Request):
+    """Accept a JSON body and stream model output via SSE."""
+
+    async def event_generator() -> AsyncGenerator[str, None]:
+        try:
+            payload = await request.json()
+        except Exception:
+            payload = {}
+        prompt = payload.get("prompt") or json.dumps(payload)
+        try:
+            async for chunk in iterate_in_threadpool(stream_generate(prompt)):
+                data = json.dumps({"text": chunk})
+                yield f"data: {data}\n\n"
+        except Exception:
+            logger.exception("model generation failed")
+            data = json.dumps({"error": "generation_failed"})
+            yield f"data: {data}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

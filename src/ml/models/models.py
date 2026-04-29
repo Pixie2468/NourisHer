@@ -1,13 +1,14 @@
 import uuid
-from datetime import datetime
+import importlib
 import sqlalchemy as sa
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB, UUID
+
 try:
     # pgvector provides a SA type wrapper
-    from pgvector.sqlalchemy import Vector
+    Vector = importlib.import_module("pgvector.sqlalchemy").Vector
     PGVECTOR_AVAILABLE = True
-except Exception:
+except ImportError:
     Vector = None
     PGVECTOR_AVAILABLE = False
 
@@ -19,7 +20,7 @@ class Model(Base):
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = sa.Column(sa.String(255), nullable=False)
     path = sa.Column(sa.Text, nullable=False)
-    metadata = sa.Column(JSONB, nullable=True)
+    meta = sa.Column("metadata", JSONB, nullable=True)
     created_at = sa.Column(sa.TIMESTAMP(timezone=True), server_default=sa.func.now())
 
 
@@ -41,14 +42,16 @@ class Record(Base):
     model_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey("models.id"), nullable=True)
     input = sa.Column(JSONB, nullable=False)
     output = sa.Column(JSONB, nullable=True)
-    metadata = sa.Column(JSONB, nullable=True)
+    meta = sa.Column("metadata", JSONB, nullable=True)
     created_at = sa.Column(sa.TIMESTAMP(timezone=True), server_default=sa.func.now())
 
 
 class Embedding(Base):
     __tablename__ = "embeddings"
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    record_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey("records.id"), nullable=True)
+    record_id = sa.Column(
+        UUID(as_uuid=True), sa.ForeignKey("records.id"), nullable=True
+    )
     # Use pgvector Vector type if available, otherwise fallback to JSONB
     if PGVECTOR_AVAILABLE:
         vector = sa.Column(Vector, nullable=True)

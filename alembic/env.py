@@ -13,12 +13,13 @@ from alembic import context
 config = context.config
 
 # Interpret the config file for Python logging.
-fileConfig(config.config_file_name)
+if config.config_file_name:
+    fileConfig(config.config_file_name)
 
 # add src to path so imports work
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "src")))
 
-from api.models import Base  # noqa: E402
+from ml.models.models import Base  # noqa: E402
 
 target_metadata = Base.metadata
 
@@ -38,8 +39,9 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
+    section = config.get_section(config.config_ini_section) or {}
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

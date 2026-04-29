@@ -48,7 +48,6 @@ env/
 *.tar
 *.gz
 *.rar
-*.json
 
 # Git
 *.orig

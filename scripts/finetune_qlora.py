@@ -6,33 +6,58 @@ Notes:
 - This script targets low-VRAM setups by using 4-bit quantization (QLoRA) and LoRA adapters.
 - It requires: transformers, datasets, accelerate, peft, bitsandbytes, safetensors (recommended)
 - Recommended run command (use accelerate):
-  accelerate launch --num_processes 1 --num_machines 1 scripts/finetune_qlora.py \
+    accelerate launch --num_processes 1 --num_machines 1 scripts/finetune_qlora.py \
     --base_model <BASE_MODEL> --dataset examples/finetune_example.jsonl --output_dir ml/models/finetuned-llama
 
 The script is conservative with memory but training large LLaMA models may still OOM on 4GB VRAM.
 If you run out of memory, reduce batch sizes or use gradient accumulation and smaller sequence lengths.
 """
+
 import argparse
 import logging
 import os
-from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Fine-tune a causal LLM with LoRA/QLoRA (low-VRAM)")
-    p.add_argument("--dataset", required=True, help="Path to JSONL dataset with fields 'prompt' and 'response'")
-    p.add_argument("--base_model", required=True, help="HF model name or local path (e.g. meta-llama/Llama-2-7b-chat-hf)")
-    p.add_argument("--output_dir", required=True, help="Where to save the fine-tuned adapter/model")
+    p = argparse.ArgumentParser(
+        description="Fine-tune a causal LLM with LoRA/QLoRA (low-VRAM)"
+    )
+    p.add_argument(
+        "--dataset",
+        required=True,
+        help="Path to JSONL dataset with fields 'prompt' and 'response'",
+    )
+
+    p.add_argument(
+        "--base_model",
+        required=True,
+        help="HF model name or local path (e.g. meta-llama/Llama-2-7b-chat-hf)",
+    )
+    p.add_argument(
+        "--output_dir", required=True, help="Where to save the fine-tuned adapter/model"
+    )
     p.add_argument("--per_device_train_batch_size", type=int, default=1)
-    p.add_argument("--gradient_accumulation_steps", type=int, default=32,
-                   help="Gradient accumulation to simulate larger batches on low VRAM")
+    p.add_argument(
+        "--gradient_accumulation_steps",
+        type=int,
+        default=32,
+        help="Gradient accumulation to simulate larger batches on low VRAM",
+    )
     p.add_argument("--num_train_epochs", type=int, default=1)
-    p.add_argument("--max_seq_length", type=int, default=512,
-                   help="Maximum sequence length (reduce to save memory)")
+    p.add_argument(
+        "--max_seq_length",
+        type=int,
+        default=512,
+        help="Maximum sequence length (reduce to save memory)",
+    )
     p.add_argument("--learning_rate", type=float, default=2e-4)
-    p.add_argument("--use_4bit", action="store_true", help="Enable 4-bit loading (requires bitsandbytes)")
+    p.add_argument(
+        "--use_4bit",
+        action="store_true",
+        help="Enable 4-bit loading (requires bitsandbytes)",
+    )
     return p.parse_args()
 
 
@@ -43,15 +68,23 @@ def main():
     try:
         import torch
         from datasets import load_dataset
-        from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer, BitsAndBytesConfig
+        from transformers import (
+            AutoTokenizer,
+            AutoModelForCausalLM,
+            TrainingArguments,
+            Trainer,
+            BitsAndBytesConfig,
+        )
         from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
     except Exception as e:
-        logger.error("Missing training dependencies. Install transformers, datasets, peft, bitsandbytes, accelerate")
-        raise
+        logger.error(
+            "Missing training dependencies. Install transformers, datasets, peft, bitsandbytes, accelerate"
+        )
+        raise e
 
     # Load dataset
     ds = load_dataset("json", data_files=args.dataset)
-    # dataset may return a dict or Dataset; be robust
+    # dataset may return a dict or Dataset
     if isinstance(ds, dict):
         ds = ds[list(ds.keys())[0]]
 
@@ -88,7 +121,9 @@ def main():
         # prepare for k-bit training
         model = prepare_model_for_kbit_training(model)
     else:
-        model = AutoModelForCausalLM.from_pretrained(args.base_model, device_map="auto", trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(
+            args.base_model, device_map="auto", trust_remote_code=True
+        )
 
     # LoRA config — conservative defaults for low VRAM
     lora_config = LoraConfig(
@@ -105,7 +140,7 @@ def main():
 
     # TrainingArguments
     training_args = TrainingArguments(
-        output_dir=args.output_dir,
+        args.output_dir,
         per_device_train_batch_size=args.per_device_train_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         num_train_epochs=args.num_train_epochs,
@@ -121,7 +156,7 @@ def main():
         model=model,
         args=training_args,
         train_dataset=tokenized,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
     )
 
     trainer.train()

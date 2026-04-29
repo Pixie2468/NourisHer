@@ -2,8 +2,8 @@ import os
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import text
 
-from .config import settings
-
+from api.config import settings
+from ml.models.models import Base
 
 DATABASE_URL = os.getenv("DATABASE_URL", settings.DATABASE_URL)
 
@@ -20,3 +20,4 @@ async def create_extensions_and_tables():
         except Exception:
             # extension creation may fail on managed DBs; ignore for now
             pass
+        await conn.run_sync(Base.metadata.create_all)
