@@ -38,6 +38,9 @@ CREATE TABLE pcos_profiles (
     last_period_date    DATE,
     stress_level        SMALLINT CHECK (stress_level BETWEEN 1 AND 10),
     sleep_hours         NUMERIC(3,1),
+    symptoms            TEXT[] DEFAULT '{}',
+    allergies           TEXT[] DEFAULT '{}',
+    goals               TEXT[] DEFAULT '{}',
     onboarding_complete BOOLEAN DEFAULT FALSE,
     created_at          TIMESTAMPTZ DEFAULT NOW(),
     updated_at          TIMESTAMPTZ DEFAULT NOW()
@@ -352,6 +355,27 @@ CREATE TABLE user_streaks (
 );
 
 -- ─────────────────────────────────────────
+-- USER CONTENT (User-uploaded videos, photos, articles)
+-- ─────────────────────────────────────────
+CREATE TABLE user_content (
+    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title         VARCHAR(300) NOT NULL,
+    content_type  VARCHAR(20) NOT NULL,             -- video, photo, article
+    description   TEXT,
+    content_url   TEXT,                             -- file URL for video/photo
+    content_text  TEXT,                             -- for articles
+    thumbnail_url TEXT,
+    tags          TEXT[],
+    view_count    INT DEFAULT 0,
+    like_count    INT DEFAULT 0,
+    is_public     BOOLEAN DEFAULT TRUE,
+    is_active     BOOLEAN DEFAULT TRUE,
+    created_at    TIMESTAMPTZ DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────────
 -- INDEXES
 -- ─────────────────────────────────────────
 CREATE INDEX idx_users_email          ON users(email);
@@ -375,3 +399,4 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_users_updated         BEFORE UPDATE ON users         FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER trg_pcos_updated          BEFORE UPDATE ON pcos_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER trg_posts_updated         BEFORE UPDATE ON posts         FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_user_content_updated  BEFORE UPDATE ON user_content  FOR EACH ROW EXECUTE FUNCTION update_updated_at();

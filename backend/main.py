@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
 from core.config import settings
@@ -18,6 +19,7 @@ from routers.chat          import router as chat_router
 from routers.diet          import router as diet_router
 from routers.community     import router as community_router
 from routers.content_cycle import content_router, cycle_router
+from routers.user_content  import router as user_content_router
 
 
 @asynccontextmanager
@@ -39,6 +41,9 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
+# ── STATIC FILES ──────────────────────────────────────────────
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 # ── CORS ─────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
@@ -57,6 +62,7 @@ app.include_router(diet_router,      prefix=API)
 app.include_router(community_router, prefix=API)
 app.include_router(content_router,   prefix=API)
 app.include_router(cycle_router,     prefix=API)
+app.include_router(user_content_router, prefix=API)
 
 
 @app.get("/", tags=["Health"])

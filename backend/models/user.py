@@ -26,3 +26,4 @@ class User(Base):
     posts         = relationship("Post", back_populates="author", cascade="all, delete-orphan")
     cycle_entries = relationship("CycleEntry", back_populates="user", cascade="all, delete-orphan")
     streak        = relationship("UserStreak", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    user_content  = relationship("UserContent", back_populates="user", cascade="all, delete-orphan")

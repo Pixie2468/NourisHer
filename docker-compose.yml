@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 services:
   postgres:
     image: pgvector/pgvector:pg15
@@ -33,6 +34,8 @@ volumes:
 =======
 version: '3.9'
 
+=======
+>>>>>>> 427c59c (added Add Content feature on learning page)
 services:
   # ── PostgreSQL ──────────────────────────────────────────────
   db:

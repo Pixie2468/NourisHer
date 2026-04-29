@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { Home, Salad, MessageCircle, Users, BookOpen } from 'lucide-react'
+import { Home, Salad, MessageCircle, Users, BookOpen, User } from 'lucide-react'
 
 const navItems = [
   { to: '/',          icon: Home,          label: 'Home' },
@@ -7,6 +7,7 @@ const navItems = [
   { to: '/chat',      icon: MessageCircle, label: 'Nour AI' },
   { to: '/community', icon: Users,         label: 'Community' },
   { to: '/learn',     icon: BookOpen,      label: 'Learn' },
+  { to: '/profile',   icon: User,          label: 'Profile' },
 ]
 
 export default function AppLayout() {

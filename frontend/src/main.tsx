@@ -26,7 +26,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={qc}>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/login"    element={<AuthPage />} />
           <Route path="/onboard"  element={<PrivateRoute><OnboardPage /></PrivateRoute>} />

@@ -96,6 +96,29 @@ class Comment(Base):
     post = relationship("Post", back_populates="comments")
 
 
+# ── USER CONTENT ────────────────────────────────────
+class UserContent(Base):
+    __tablename__ = "user_content"
+
+    id            = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id       = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    title         = Column(String(300), nullable=False)
+    content_type  = Column(String(20), nullable=False)  # video, photo, article
+    description   = Column(Text)
+    content_url   = Column(Text)  # file URL for video/photo
+    content_text  = Column(Text)  # for articles
+    thumbnail_url = Column(Text)
+    tags          = Column(ARRAY(String), default=[])
+    view_count    = Column(Integer, default=0)
+    like_count    = Column(Integer, default=0)
+    is_public     = Column(Boolean, default=True)
+    is_active     = Column(Boolean, default=True)
+    created_at    = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at    = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="user_content")
+
+
 # ── EDUCATIONAL CONTENT ───────────────────────────────
 class EducationalContent(Base):
     __tablename__ = "educational_content"

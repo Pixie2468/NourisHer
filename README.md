@@ -91,7 +91,7 @@ cp backend/.env.example backend/.env
 # Edit backend/.env and add your ANTHROPIC_API_KEY
 
 # 3. Launch everything
-docker-compose up --build
+docker compose up --build
 
 # App runs at:
 #   Frontend  → http://localhost:3000

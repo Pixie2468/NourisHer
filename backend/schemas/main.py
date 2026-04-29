@@ -152,6 +152,32 @@ class ContentOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# ── USER CONTENT ────────────────────────────────────
+class UserContentCreate(BaseModel):
+    title: str
+    content_type: str  # video, photo, article
+    description: Optional[str] = None
+    content_text: Optional[str] = None
+    tags: List[str] = []
+
+
+class UserContentOut(BaseModel):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    title: str
+    content_type: str
+    description: Optional[str] = None
+    content_url: Optional[str] = None
+    content_text: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    tags: List[str] = []
+    view_count: int
+    like_count: int
+    is_public: bool
+    created_at: datetime
+    model_config = {"from_attributes": True}
+
+
 # ── CYCLE ─────────────────────────────────────────────
 class CycleEntryCreate(BaseModel):
     entry_date: date
