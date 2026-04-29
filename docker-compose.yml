@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 services:
   postgres:
     image: pgvector/pgvector:pg15
@@ -29,3 +30,63 @@ services:
 
 volumes:
   postgres_data:
+=======
+version: '3.9'
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: nourisher_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nourisher_db
+      POSTGRES_USER: nourisher
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nourisher -d nourisher_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nourisher_backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://nourisher:password@db:5432/nourisher_db
+      SYNC_DATABASE_URL: postgresql://nourisher:password@db:5432/nourisher_db
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - uploads:/app/uploads
+
+  # ── React Frontend ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nourisher_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pg_data:
+  uploads:
+>>>>>>> 79ca83f (Initial working version (frontend + backend + docker setup))
