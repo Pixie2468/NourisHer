@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath("."))
 
 
 def test_clean_data_splits_labels():
-    from src.ml.data_cleaning.dataframe import clean_data
+    from nourisher.ml.data_cleaning.dataframe import clean_data
 
     df = pd.DataFrame(
         [

@@ -1,11 +1,11 @@
-import uuid
 import importlib
+import uuid
+
 import sqlalchemy as sa
-from sqlalchemy.orm import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import declarative_base
 
 try:
-    # pgvector provides a SA type wrapper
     Vector = importlib.import_module("pgvector.sqlalchemy").Vector
     PGVECTOR_AVAILABLE = True
 except ImportError:
@@ -49,10 +49,7 @@ class Record(Base):
 class Embedding(Base):
     __tablename__ = "embeddings"
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    record_id = sa.Column(
-        UUID(as_uuid=True), sa.ForeignKey("records.id"), nullable=True
-    )
-    # Use pgvector Vector type if available, otherwise fallback to JSONB
+    record_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey("records.id"), nullable=True)
     if PGVECTOR_AVAILABLE:
         vector = sa.Column(Vector, nullable=True)
     else:

@@ -2,7 +2,7 @@ import logging
 import threading
 from typing import Any, Dict, Iterator, cast
 
-from api.config import settings
+from nourisher.api.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +25,6 @@ def load_system_prompt(path: str | None = None) -> str:
 
 
 def load_model(model_path: str | None = None):
-    """Attempt to load the model and tokenizer. This function is tolerant and will
-    try 4-bit loading if configured. It returns a (model, tokenizer) tuple.
-    """
     global _model, _tokenizer
     model_path = model_path or settings.MODEL_PATH
     try:
@@ -37,11 +34,9 @@ def load_model(model_path: str | None = None):
             "transformers is required to load the LLM: install transformers"
         ) from e
 
-    # lazy import bitsandbytes only if requested
     load_in_4bit = settings.LOAD_IN_4BIT
     try:
         if load_in_4bit:
-            # 4-bit loading requires bitsandbytes to be installed
             import bitsandbytes as bnb  # type: ignore
 
             _model = AutoModelForCausalLM.from_pretrained(
@@ -55,7 +50,6 @@ def load_model(model_path: str | None = None):
                 model_path, device_map="auto", trust_remote_code=True
             )
     except Exception:
-        # fallback to CPU loading (very slow or may OOM)
         logger.exception(
             "Failed to load model with 4-bit/device_map fallback, trying cpu."
         )
@@ -72,9 +66,6 @@ def load_model(model_path: str | None = None):
 
 
 def generate(prompt: str, max_new_tokens: int = 128, **gen_kwargs) -> Dict[str, Any]:
-    """Generate text from prompt. Returns a dict with the output text and raw model output.
-    This function is blocking (calls into HF/torch) — call via run_in_threadpool if needed.
-    """
     global _model, _tokenizer
     if _model is None or _tokenizer is None:
         _model, _tokenizer = load_model()
@@ -82,7 +73,6 @@ def generate(prompt: str, max_new_tokens: int = 128, **gen_kwargs) -> Dict[str, 
     system_prompt = load_system_prompt()
     final_prompt = prompt if not system_prompt else f"{system_prompt}\n\n{prompt}".strip()
     inputs = _tokenizer(final_prompt, return_tensors="pt")
-    # move inputs to model device
     device = next(_model.parameters()).device
     inputs = {k: v.to(device) for k, v in inputs.items()}
     output_ids = cast(Any, _model).generate(
@@ -97,7 +87,6 @@ def generate(prompt: str, max_new_tokens: int = 128, **gen_kwargs) -> Dict[str, 
 def stream_generate(
     prompt: str, max_new_tokens: int = 128, **gen_kwargs
 ) -> Iterator[str]:
-    """Stream generated tokens for a prompt."""
     global _model, _tokenizer
     if _model is None or _tokenizer is None:
         _model, _tokenizer = load_model()

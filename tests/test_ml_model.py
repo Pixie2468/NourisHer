@@ -50,7 +50,7 @@ class DummyModel:
 
 
 def test_generate_uses_system_prompt(monkeypatch, tmp_path):
-    import src.api.ml_model as ml_model
+    import nourisher.api.ml_model as ml_model
 
     prompt_path = tmp_path / "system_prompt.txt"
     prompt_path.write_text("SYSTEM", encoding="utf-8")
@@ -67,7 +67,7 @@ def test_generate_uses_system_prompt(monkeypatch, tmp_path):
 
 
 def test_stream_generate_yields(monkeypatch):
-    import src.api.ml_model as ml_model
+    import nourisher.api.ml_model as ml_model
 
     class DummyStreamer:
         def __init__(self, *args, **kwargs):

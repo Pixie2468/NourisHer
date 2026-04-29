@@ -21,7 +21,7 @@ services:
       LOAD_IN_4BIT: "true"
       SYSTEM_PROMPT_PATH: configs/system_prompt.txt
     command: >
-      sh -c "pip install -e . && uvicorn src.main:app --host 0.0.0.0 --port 8000"
+      sh -c "pip install -e . && uvicorn nourisher.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     depends_on:

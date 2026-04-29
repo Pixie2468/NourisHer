@@ -23,12 +23,12 @@ class DummySession:
 @pytest.mark.asyncio
 async def test_stream_endpoint(monkeypatch):
     # Patch AsyncSession to avoid requiring a real DB during unit test
-    import src.api.db as db
+    import nourisher.api.db as db
 
     monkeypatch.setattr(db, "AsyncSession", DummySession)
 
     # Patch the model generate function to be deterministic
-    import src.api.ml_model as ml_model
+    import nourisher.api.ml_model as ml_model
 
     def fake_generate(prompt, max_new_tokens=128, **kwargs):
         return {"text": f"pred:{prompt}"}
@@ -36,7 +36,7 @@ async def test_stream_endpoint(monkeypatch):
     monkeypatch.setattr(ml_model, "generate", fake_generate)
 
     # Capture batches instead of hitting a real DB
-    import src.api.routes.stream as routes
+    import nourisher.api.routes.stream as routes
 
     captured = []
 
@@ -46,12 +46,13 @@ async def test_stream_endpoint(monkeypatch):
     monkeypatch.setattr(routes, "_flush_batch", fake_flush)
 
     # Import app after monkeypatching to avoid startup DB work
-    import src.main as main
+    import nourisher.main as main
+    import nourisher.api.db as db
 
     async def fake_startup():
         return None
 
-    monkeypatch.setattr(main, "create_extensions_and_tables", fake_startup)
+    monkeypatch.setattr(db, "create_extensions_and_tables", fake_startup)
 
     app = main.app
     from httpx import AsyncClient

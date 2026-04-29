@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath("."))
 
 @pytest.mark.asyncio
 async def test_sse_stream_endpoint(monkeypatch):
-    import src.api.routes.stream as routes
+    import nourisher.api.routes.stream as routes
 
     def fake_stream_generate(prompt, max_new_tokens=128, **kwargs):
         del max_new_tokens
@@ -19,12 +19,13 @@ async def test_sse_stream_endpoint(monkeypatch):
 
     monkeypatch.setattr(routes, "stream_generate", fake_stream_generate)
 
-    import src.main as main
+    import nourisher.main as main
+    import nourisher.api.db as db
 
     async def fake_startup():
         return None
 
-    monkeypatch.setattr(main, "create_extensions_and_tables", fake_startup)
+    monkeypatch.setattr(db, "create_extensions_and_tables", fake_startup)
 
     from httpx import AsyncClient
 

@@ -9,12 +9,13 @@ sys.path.insert(0, os.path.abspath("."))
 
 @pytest.mark.asyncio
 async def test_health_endpoint(monkeypatch):
-    import src.main as main
+    import nourisher.main as main
+    import nourisher.api.db as db
 
     async def fake_startup():
         return None
 
-    monkeypatch.setattr(main, "create_extensions_and_tables", fake_startup)
+    monkeypatch.setattr(db, "create_extensions_and_tables", fake_startup)
 
     from httpx import AsyncClient
 

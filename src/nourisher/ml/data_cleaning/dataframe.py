@@ -1,21 +1,18 @@
 import pandas as pd
 from pathlib import Path
 
-from utils.paths import DATA_DIR
+from nourisher.utils.paths import DATA_DIR
 
 INPUT_FILE = DATA_DIR / "pcos_data_cleaned.jsonl"
 OUTPUT_FILE = DATA_DIR / "pcos_final.jsonl"
 
 
-# Load Data
 def load_data(file_path: Path) -> pd.DataFrame:
     df = pd.read_json(file_path, lines=True)
     return df.copy()
 
 
-# Clean Data
 def clean_data(df: pd.DataFrame):
-    # Drop unnecessary columns
     columns_to_drop = [
         "blood_18",
         "blood_17",
@@ -28,24 +25,20 @@ def clean_data(df: pd.DataFrame):
     ]
     df = df.drop(columns=columns_to_drop, errors="ignore")
 
-    # Separate label
     labels = df["pcos"]
     df = df.drop(columns=["pcos"])
 
     return df, labels
 
 
-# Save as JSON
 def save_to_json(df: pd.DataFrame, file_path: Path):
-    df.to_json(file_path, orient="records", lines=True)  # best for APIs / ML pipelines
+    df.to_json(file_path, orient="records", lines=True)
 
 
-# Main Pipeline
 def main():
     df = load_data(INPUT_FILE)
     df_clean, labels = clean_data(df)
 
-    # Optional: reattach labels if needed
     df_final = df_clean.copy()
     df_final["pcos"] = labels
 

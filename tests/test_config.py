@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath("."))
 
 
 def test_settings_defaults():
-    from src.api.config import settings
+    from nourisher.api.config import settings
 
     assert settings.MODEL_PATH
     assert settings.DATABASE_URL

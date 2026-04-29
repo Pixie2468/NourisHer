@@ -57,7 +57,7 @@ alembic upgrade head
 6) Run the FastAPI app
 
 ```bash
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn nourisher.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 7) Verify health
@@ -182,7 +182,7 @@ Use the trained adapter in the API
 
 ```bash
 export MODEL_PATH="ml/models/pcos-lora"
-uvicorn src.main:app --host 0.0.0.0 --port 8000
+uvicorn nourisher.main:app --host 0.0.0.0 --port 8000
 ```
 
 Notes and tips

@@ -2,14 +2,14 @@ import json
 import logging
 from typing import AsyncGenerator, List
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import iterate_in_threadpool, run_in_threadpool
 
-from api.config import settings
-from api.db import AsyncSession
-from api.ml_model import generate, stream_generate
-from ml.models.models import Record
+from nourisher.api.config import settings
+from nourisher.api.db import AsyncSession
+from nourisher.api.ml_model import generate, stream_generate
+from nourisher.ml.models import Record
 from sqlalchemy import insert
 
 router = APIRouter()
@@ -50,7 +50,6 @@ async def stream(request: Request):
                     except Exception:
                         logger.exception("failed parse line: %s", line)
                         continue
-                    # run generation in threadpool to avoid blocking
                     try:
                         out = await run_in_threadpool(
                             generate, payload.get("prompt") or json.dumps(payload)
@@ -71,17 +70,15 @@ async def stream(request: Request):
                         await _flush_batch(session, batch)
                         batch = []
 
-            # final flush
             if batch:
                 await _flush_batch(session, batch)
         finally:
             await session.close()
 
         return {"status": "ok"}
-    else:
-        raise HTTPException(
-            status_code=415, detail="Unsupported content-type. Use application/x-ndjson"
-        )
+    raise HTTPException(
+        status_code=415, detail="Unsupported content-type. Use application/x-ndjson"
+    )
 
 
 @router.post("/stream/sse")

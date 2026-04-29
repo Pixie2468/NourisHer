@@ -19,7 +19,7 @@ if config.config_file_name:
 # add src to path so imports work
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "src")))
 
-from ml.models.models import Base  # noqa: E402
+from nourisher.ml.models import Base  # noqa: E402
 
 target_metadata = Base.metadata
 

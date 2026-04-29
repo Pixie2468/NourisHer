@@ -44,7 +44,7 @@ class DummyEngine:
 
 @pytest.mark.asyncio
 async def test_create_extensions_and_tables(monkeypatch):
-    import src.api.db as db
+    import nourisher.api.db as db
 
     conn = DummyConn()
     monkeypatch.setattr(db, "engine", DummyEngine(conn))
