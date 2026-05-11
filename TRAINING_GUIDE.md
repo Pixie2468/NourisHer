@@ -41,9 +41,11 @@ accelerate launch --num_processes 1 --num_machines 1 scripts/finetune_qlora.py \
     --num_train_epochs 3 \
     --learning_rate 2e-4
 ```
+
 *(Note: Replace `meta-llama/Llama-2-7b-chat-hf` with your chosen base model. If you use LLaMA, ensure you have requested access and logged in via `huggingface-cli login`)*
 
-### Parameter Breakdown:
+### Parameter Breakdown
+
 - `--use_4bit`: Shrinks the model footprint so it fits in lower VRAM.
 - `--per_device_train_batch_size`: Kept at 1 to save memory.
 - `--gradient_accumulation_steps`: Simulates a larger batch size (1 * 16 = 16) by accumulating gradients before updating weights.
