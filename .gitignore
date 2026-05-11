@@ -36,6 +36,7 @@ htmlcov/
 .env
 .env.*
 
+<<<<<<< HEAD
 # =========================
 # React / Node.js
 # =========================
@@ -104,3 +105,8 @@ coverage/
 # =========================
 *.swp
 *.swo
+=======
+# Jupyter Notebook
+.ipynb_checkpoints 
+TRAINING_GUIDE.md
+>>>>>>> main
