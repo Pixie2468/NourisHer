@@ -53,4 +53,5 @@ env/
 *.orig
 
 # Jupyter Notebook
-.ipynb_checkpoints
+.ipynb_checkpoints 
+TRAINING_GUIDE.md

@@ -3,6 +3,7 @@
 This repository contains a minimal FastAPI service that accepts NDJSON input, runs generation with a LLaMA-family model, and stores inputs/outputs in a Postgres database with pgvector support for embeddings. It also includes a QLoRA/LoRA fine-tuning script tuned for low-VRAM environments, tests and examples.
 
 What I added
+
 - FastAPI app (src/main.py) with a streaming endpoint at `/stream` that accepts `application/x-ndjson` and stores results in Postgres.
 - SQLAlchemy models and Alembic migration to create tables and the `vector` extension.
 - Docker Compose file to run Postgres with pgvector.
@@ -130,7 +131,7 @@ Response:
 {"status":"ok"}
 ```
 
-3) SSE streaming (frontend friendly)
+1) SSE streaming (frontend friendly)
 
 ```bash
 curl -N -H "Content-Type: application/json" \
@@ -186,6 +187,7 @@ uvicorn nourisher.main:app --host 0.0.0.0 --port 8000
 ```
 
 Notes and tips
+
 - If you hit OOM on 4GB VRAM:
   - reduce `--max_seq_length` (default 512)
   - increase `--gradient_accumulation_steps`
@@ -203,6 +205,7 @@ pytest -q
 ```
 
 Troubleshooting
+
 - If Postgres is not reachable, verify `DATABASE_URL` and that the container is running.
 - If model loading fails, confirm `MODEL_PATH` points to a valid model or adapter directory.
 - For SSE in the browser, use `EventSource` and ensure CORS is configured if needed.
